@@ -1,0 +1,108 @@
+﻿@page "/"
+<PageTitle>CSS3 Sample</PageTitle>
+<br/>
+<div style="@divStyle">
+    <div style="opacity:1.0">@Text</div>
+</div>
+<hr/>
+DIV陰影X位置:<input type="range" value="@ShadowXVal" min="-20" max="20" oninput="@((Action<ChangeEventArgs>)(v=>{ShadowXVal=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@ShadowXVal</span>px<br/>
+DIV陰影Y位置:<input type="range" value="@ShadowYVal" min="-20" max="20" oninput="@((Action<ChangeEventArgs>)(v=>{ShadowYVal=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@ShadowYVal</span>px<br/>
+DIV陰影ぼかし:<input type="range" value="@ShadowBlur" min="0" max="20" oninput="@((Action<ChangeEventArgs>)(v=>{ShadowBlur=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@ShadowBlur</span>px<br/>
+ボーダー角度:<input type="range" value="@RoundVal" min="0" max="50" oninput="@((Action<ChangeEventArgs>)(v=>{RoundVal=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@RoundVal</span>px<br/>
+背景透明度:<input type="range" value="@Transparency" min="0" max="100" oninput="@((Action<ChangeEventArgs>)(v=>{Transparency=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@Transparency</span>%<br/>
+グラデーション:<input type="checkbox" value="@GradationChecked" oninput="@((Action<ChangeEventArgs>)(v=>{GradationChecked = !GradationChecked;SetStyle();}))" /><br/>
+背景色:<input type="color" value="@BackColor" oninput="@((Action<ChangeEventArgs>)(v=>{BackColor=(string)(v.Value ?? "000080");SetStyle();}))"/>
+@if (GradationChecked) {
+    <span>～</span><input type="color" value="@ToColor" oninput="@((Action<ChangeEventArgs>)(v=>{ToColor=(string)(v.Value ?? "000080");SetStyle();}))"/><br/>
+    <span>角度</span><input type="range" min="0" max="180" value="@GradientRect" oninput="@((Action<ChangeEventArgs>)(v=>{GradientRect=Convert.ToInt32(v.Value);SetStyle();}))"/><span>&nbsp</span><span>@GradientRect</span><span>度</span><br/>
+}
+<br/>
+テキスト陰影X位置:<input type="range" value="@TextShadowX" min="-20" max="20" oninput="@((Action<ChangeEventArgs>)(v=>{TextShadowX=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@TextShadowX</span>px<br/>
+テキスト陰影Y位置:<input type="range" value="@TextShadowY" min="-20" max="20" oninput="@((Action<ChangeEventArgs>)(v=>{TextShadowY=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@TextShadowY</span>px<br/>
+テキスト陰影ぼかし:<input type="range" value="@TextShadowBlur" min="0" max="20" oninput="@((Action<ChangeEventArgs>)(v=>{TextShadowBlur=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@TextShadowBlur</span>px<br/>
+フォントサイズ:<input type="range" value="@FontSize" min="3" max="60" oninput="@((Action<ChangeEventArgs>)(v=>{FontSize=Convert.ToInt32(v.Value);SetStyle();}))"/>&nbsp<span>@FontSize</span>pt<br/>
+<br/>
+テキスト：<input type="text" value="@Text" oninput="@((Action<ChangeEventArgs>)(v=>Text=v.Value?.ToString()))"/>
+<br/>
+<br/>
+<span>@Mesg</span>
+@code {
+
+    protected string divStyle = "";
+    protected int ShadowXVal = 0;
+    protected int ShadowYVal = 0;
+    protected int ShadowBlur = 0;
+    protected int RoundVal = 0;
+    protected int Transparency = 100;
+    protected string BackColor = "#000080";
+    protected string? Text = "Hello World";
+    protected int TextShadowX = 0;
+    protected int TextShadowY = 0;
+    protected int TextShadowBlur = 0;
+    protected int FontSize = 12;
+    protected bool GradationChecked = false;
+    protected string ToColor = "#000080";
+    protected int GradientRect = 180;
+    protected string Mesg = "";
+    // スタイルのベース
+    const string divStyleBase = @"border-style:solid;border-color:{0};background: linear-gradient({12}deg ,{0},{11});border-style:solid;
+border-width:1px;border-radius:{1}px;box-shadow:{2}px {3}px {4}px darkgray; color:{5};font-weight:bold;
+text-align:center;height:120px;width:80%;vertical-align:middle;font-size:{10}pt;
+display:flex;justify-content:center;align-items:center;opacity:{6};text-shadow:{7}px {8}px {9}px darkgray";
+
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    protected override void OnInitialized() {
+        SetStyle();
+    }
+    /// <summary>
+    /// スタイルの設定
+    /// </summary>
+    protected void SetStyle() {
+        if (!GradationChecked) {
+            ToColor = BackColor;
+        }
+        divStyle = string.Format(divStyleBase,
+            BackColor,RoundVal,ShadowXVal,ShadowYVal,ShadowBlur,
+            GetReverseColor(BackColor),
+            Transparency*0.01,
+            TextShadowX,TextShadowY,TextShadowBlur,
+            FontSize,
+            ToColor,
+            GradientRect
+        );
+        Mesg = divStyle;
+    }
+    /// <summary>
+    /// 補色の取得
+    /// </summary>
+    /// <param name="color"></param>
+    /// <returns></returns>
+    private string GetCompColor(string color) {
+        int r = Convert.ToInt32(color.Substring(1,2),16);
+        int g = Convert.ToInt32(color.Substring(3,2),16);
+        int b = Convert.ToInt32(color.Substring(5,2),16);
+        // 補色はRGBのうち一番大きい値から、RGBそれぞれの値を引いた物
+        int bigcolor = new int[] { r, g, b}.Max();
+        r = bigcolor - r;
+        g = bigcolor - g;
+        b = bigcolor - b;
+        return $"#{r.ToString("x2")}{g.ToString("x2")}{b.ToString("x2")}";
+    }
+    /// <summary>
+    /// 反対色の取得
+    /// </summary>
+    /// <param name="color"></param>
+    /// <returns></returns>
+    private string GetReverseColor(string color) {
+        int r = Convert.ToInt32(color.Substring(1,2),16);
+        int g = Convert.ToInt32(color.Substring(3,2),16);
+        int b = Convert.ToInt32(color.Substring(5,2),16);
+        // 反対色は255からRGBそれぞれの値を引いた物
+        r = 255 - r;
+        g = 255 - g;
+        b = 255 - b;
+        return $"#{r.ToString("x2")}{g.ToString("x2")}{b.ToString("x2")}";
+    }
+}
